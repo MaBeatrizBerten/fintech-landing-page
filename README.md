@@ -1,75 +1,51 @@
-# React + TypeScript + Vite
+# 🚀 Fintech Landing Page
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uma landing page completa e full-stack desenvolvida para captação de leads, contando com validação de dados, auditoria de requisições e um ambiente de banco de dados isolado com Docker.
 
-Currently, two official plugins are available:
+## 💻 Tecnologias Utilizadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Frontend:**
+* React + Vite
+* TypeScript
+* Integração com API REST
 
-## React Compiler
+**Backend:**
+* Node.js + TypeScript
+* Prisma ORM
+* PostgreSQL (rodando em container Docker)
+* Zod (Validação de schemas e segurança dos dados)
+* Pino (Logs de auditoria e monitoramento)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚙️ Arquitetura e Segurança
+* **Isolamento de Ambiente:** Banco de dados executado localmente via `docker-compose`, garantindo que o ambiente de desenvolvimento não dependa de serviços externos.
+* **Validação e Sanitização:** Uso do Zod para garantir que a API processe apenas dados esperados e sanitização ativa contra injeções de código (XSS).
+* **Logs Estruturados:** Sistema de logs implementado para rastrear o tempo de resposta e o status HTTP de cada requisição no backend.
 
-## Expanding the ESLint configuration
+## 🛠️ Como rodar o projeto localmente
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+### 1. Subindo o Banco de Dados
+Na pasta do backend, inicie o container do PostgreSQL:
+```bash
+cd ramp-backend
+docker-compose up -d
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+### 2. Rodando as Migrations
+Sincronize a estrutura do banco de dados com o Prisma:
+```bash
+npx prisma db push
 ```
+
+### 3. Iniciando o Backend
+Inicie o servidor de desenvolvimento (rodará na porta 3333):
+```bash
+npm run dev
+```
+
+### 4. Iniciando o Frontend
+Em um novo terminal, na raiz do projeto frontend, instale as dependências e rode a aplicação:
+```bash
+npm install
+npm run dev
+```
+---
