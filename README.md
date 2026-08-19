@@ -5,16 +5,17 @@ Uma landing page completa e full-stack desenvolvida para captação de leads, co
 ## 💻 Tecnologias Utilizadas
 
 **Frontend:**
-* React + Vite
-* TypeScript
-* Integração com API REST
+* ![React](https://img.shields.io/badge/React-%2320232a.svg?logo=react&logoColor=%2361DAFB) + ![Vite](https://img.shields.io/badge/Vite-%23646CFF.svg?logo=vite&logoColor=white)
+* ![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?logo=typescript&logoColor=white)
+* 🔌 Integração com API REST
 
 **Backend:**
-* Node.js + TypeScript
-* Prisma ORM
-* PostgreSQL (rodando em container Docker)
-* Zod (Validação de schemas e segurança dos dados)
-* Pino (Logs de auditoria e monitoramento)
+* ![NodeJS](https://img.shields.io/badge/Node.js-%2343853D.svg?logo=node.js&logoColor=white) + ![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?logo=typescript&logoColor=white)
+* ![Prisma](https://img.shields.io/badge/Prisma-%233982CE.svg?logo=Prisma&logoColor=white)
+* ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%23316192.svg?logo=postgresql&logoColor=white) (via ![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?logo=docker&logoColor=white))
+* 🛡️ **Zod** (Validação de schemas e segurança dos dados)
+* 📝 **Pino** (Logs de auditoria e monitoramento)
+
 
 ## ⚙️ Arquitetura e Segurança
 * **Isolamento de Ambiente:** Banco de dados executado localmente via `docker-compose`, garantindo que o ambiente de desenvolvimento não dependa de serviços externos.
