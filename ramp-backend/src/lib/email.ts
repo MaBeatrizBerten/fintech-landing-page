@@ -1,4 +1,6 @@
 import { Resend } from "resend";
+import { env } from "./env";
+import { logger } from "./logger";
 
 export async function sendNewLeadNotification(
   name: string,
@@ -6,20 +8,21 @@ export async function sendNewLeadNotification(
   company?: string | null,
   message?: string
 ) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.log(
-      `[Email] RESEND_API_KEY não configurada. Notificação de novo lead ignorada para: ${name} <${email}>`
+    logger.debug(
+      { leadName: name, leadEmail: email },
+      "[Email] RESEND_API_KEY não configurada. Notificação de novo lead ignorada."
     );
     return;
   }
 
-  const to = process.env.NOTIFY_EMAIL_TO;
-  const from = process.env.NOTIFY_EMAIL_FROM;
+  const to = env.NOTIFY_EMAIL_TO;
+  const from = env.NOTIFY_EMAIL_FROM;
 
   if (!to || !from) {
-    console.log(
+    logger.warn(
       "[Email] NOTIFY_EMAIL_TO ou NOTIFY_EMAIL_FROM não configurados. Notificação ignorada."
     );
     return;
@@ -43,9 +46,11 @@ export async function sendNewLeadNotification(
     });
 
     if (error) {
-      console.error("[Email] Erro da API Resend ao enviar notificação:", error);
+      logger.error({ err: error }, "[Email] Erro da API Resend ao enviar notificação");
+    } else {
+      logger.info({ leadEmail: email, to }, "[Email] Notificação de lead enviada com sucesso");
     }
   } catch (error) {
-    console.error("[Email] Exceção ao enviar notificação de lead:", error);
+    logger.error({ err: error }, "[Email] Exceção ao enviar notificação de lead");
   }
 }

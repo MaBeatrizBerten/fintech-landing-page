@@ -1,31 +1,50 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
-import { prisma } from "./lib/prisma";
+import { env } from "./lib/env";
+import { logger } from "./lib/logger";
 import { leadsRouter } from "./routes/leads";
-import "dotenv/config";
 
 const app = express();
-const PORT = 3333;
 
 app.use(helmet());
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173" }));
-app.use("/api/leads", leadsRouter);
-app.use(
-  cors({
-    origin: "*",
-  }),
-);
+app.use(cors());
+app.use(express.json({ limit: "100kb" }));
 
-app.use(helmet());
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+// Middleware de auditoria e logging estruturado de requisições HTTP
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  res.on("finish", () => {
+    const responseTime = Date.now() - startTime;
+    logger.info(
+      {
+        method: req.method,
+        url: req.originalUrl,
+        statusCode: res.statusCode,
+        durationMs: responseTime,
+        ip: req.ip,
+      },
+      "HTTP Request"
+    );
+  });
+  next();
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+// Endpoint de Healthcheck
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Rotas de API
+app.use("/api/leads", leadsRouter);
+
+// Inicialização do Servidor
+app.listen(env.PORT, () => {
+  logger.info(
+    { port: env.PORT, environment: env.NODE_ENV },
+    `🚀 Servidor rodando na porta ${env.PORT}`
+  );
 });

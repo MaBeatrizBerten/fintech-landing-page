@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
+import sanitizeHtml from "sanitize-html";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
+import { logger } from "../lib/logger";
 import { requireApiKey } from "../middleware/requireApiKey";
 import { sendNewLeadNotification } from "../lib/email";
 
@@ -17,39 +19,91 @@ const createLeadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+/**
+ * Sanitiza rigorosamente qualquer entrada de texto, removendo todas as tags HTML,
+ * atributos e códigos executáveis/scripts para evitar vulnerabilidades de XSS e Stored XSS.
+ */
+function sanitizeInput(input: string): string {
+  return sanitizeHtml(input, {
+    allowedTags: [],
+    allowedAttributes: {},
+    disallowedTagsMode: "discard",
+  }).trim();
+}
+
 const createLeadSchema = z.object({
-  name: z.string().trim().min(2, "Nome muito curto"),
-  email: z.string().trim().email("Email inválido"),
-  company: z.string().trim().optional(),
-  message: z.string().trim().min(5, "Mensagem muito curta"),
+  name: z
+    .string()
+    .trim()
+    .transform(sanitizeInput)
+    .pipe(z.string().min(2, "Nome muito curto")),
+  email: z
+    .string()
+    .trim()
+    .transform(sanitizeInput)
+    .pipe(z.string().email("Email inválido")),
+  company: z
+    .string()
+    .trim()
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val) : undefined)),
+  message: z
+    .string()
+    .trim()
+    .transform(sanitizeInput)
+    .pipe(z.string().min(5, "Mensagem muito curta")),
 });
 
 leadsRouter.post("/", createLeadLimiter, async (req, res) => {
   const parsed = createLeadSchema.safeParse(req.body);
 
   if (!parsed.success) {
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    logger.warn(
+      { ip: req.ip, errors: fieldErrors },
+      "Tentativa de cadastro de lead rejeitada na validação/sanitização"
+    );
     return res.status(400).json({
       error: "Dados inválidos.",
-      details: parsed.error.flatten().fieldErrors,
+      details: fieldErrors,
     });
   }
 
   const { name, email, company, message } = parsed.data;
 
-  const lead = await prisma.lead.create({
-    data: { name, email, company: company || null, message },
-  });
+  try {
+    const lead = await prisma.lead.create({
+      data: { name, email, company: company || null, message },
+    });
 
-  void sendNewLeadNotification(name, email, company, message).catch((err) => {
-    console.error("Erro ao enviar notificação de lead em background:", err);
-  });
+    logger.info(
+      { leadId: lead.id, email: lead.email },
+      "Lead registrado com sucesso no banco de dados"
+    );
 
-  return res.status(201).json({ ok: true, id: lead.id });
+    void sendNewLeadNotification(name, email, company, message).catch((err) => {
+      logger.error(
+        { err, leadId: lead.id },
+        "Erro ao enviar notificação de lead em background"
+      );
+    });
+
+    return res.status(201).json({ ok: true, id: lead.id });
+  } catch (error) {
+    logger.error({ err: error }, "Falha ao persistir lead no banco de dados");
+    return res.status(500).json({ error: "Erro interno ao processar lead." });
+  }
 });
 
 leadsRouter.get("/", requireApiKey, async (_req, res) => {
-  const leads = await prisma.lead.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  res.json(leads);
+  try {
+    const leads = await prisma.lead.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    logger.info({ count: leads.length }, "Listagem de leads consultada com sucesso");
+    res.json(leads);
+  } catch (error) {
+    logger.error({ err: error }, "Falha ao consultar leads");
+    res.status(500).json({ error: "Erro interno ao consultar leads." });
+  }
 });
