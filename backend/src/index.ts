@@ -12,7 +12,7 @@ const app = express();
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
+  }),
 );
 
 // Configuração flexível e segura de CORS para suporte ao Frontend (Vercel, Localhost, Render)
@@ -53,12 +53,17 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-  })
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
+  }),
 );
 
 // Resposta expressa para requisições de preflight OPTIONS
-app.options("*", cors());
+app.options(/.*/, cors());
 
 app.use(express.json({ limit: "100kb" }));
 
@@ -75,7 +80,7 @@ app.use((req, res, next) => {
         durationMs: responseTime,
         ip: req.ip,
       },
-      "HTTP Request"
+      "HTTP Request",
     );
   });
   next();
@@ -96,13 +101,15 @@ app.use("/api/leads", leadsRouter);
 
 // Rota 404 para endpoints não mapeados
 app.use((req, res) => {
-  res.status(404).json({ error: `Rota '${req.originalUrl}' não encontrada no servidor.` });
+  res
+    .status(404)
+    .json({ error: `Rota '${req.originalUrl}' não encontrada no servidor.` });
 });
 
 // Inicialização do Servidor
 app.listen(env.PORT, () => {
   logger.info(
     { port: env.PORT, environment: env.NODE_ENV },
-    `🚀 Servidor backend rodando na porta ${env.PORT}`
+    `🚀 Servidor backend rodando na porta ${env.PORT}`,
   );
 });
