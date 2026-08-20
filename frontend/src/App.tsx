@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import type { ReactNode } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
@@ -7,6 +8,15 @@ import { Home } from "./pages/Home";
 import { Products } from "./pages/Products";
 import { Solutions } from "./pages/Solutions";
 import { Auth } from "./pages/Auth";
+import { Dashboard } from "./pages/Dashboard";
+import { useAuth } from "./hooks/useAuth";
+
+// Componente para proteger a rota exclusiva
+function PrivateRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  // Se não estiver logado, manda pro login
+  return isAuthenticated ? children : <Navigate to="/entrar" replace />;
+}
 
 function App() {
   return (
@@ -23,6 +33,16 @@ function App() {
               <Route path="/solucoes" element={<Solutions />} />
               <Route path="/entrar" element={<Auth defaultTab="login" />} />
               <Route path="/comecar" element={<Auth defaultTab="register" />} />
+
+              {/* Rota Privada do Dashboard */}
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
             </Routes>
           </main>
 

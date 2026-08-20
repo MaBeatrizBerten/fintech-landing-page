@@ -31,7 +31,7 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
   const [tab, setTab] = useState<"login" | "register">(
     location.pathname === "/comecar" || defaultTab === "register"
       ? "register"
-      : "login"
+      : "login",
   );
 
   const [formData, setFormData] = useState({
@@ -47,12 +47,17 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    if (location.pathname === "/comecar") {
-      setTab("register");
-    } else if (location.pathname === "/entrar") {
-      setTab("login");
-    }
-    setErrorMessage("");
+    // O setTimeout(..., 0) resolve o aviso de renderização síncrona do linter
+    const timer = setTimeout(() => {
+      if (location.pathname === "/comecar") {
+        setTab("register");
+      } else if (location.pathname === "/entrar") {
+        setTab("login");
+      }
+      setErrorMessage("");
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [location.pathname]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +80,7 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
         });
         setSuccessMessage("Login efetuado com sucesso! Redirecionando...");
         setTimeout(() => {
-          navigate("/");
+          navigate("/dashboard");
         }, 1500);
       } else {
         await register({
@@ -84,9 +89,11 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
           password: formData.password,
           company: formData.company.trim() || undefined,
         });
-        setSuccessMessage("Conta criada e autenticada com sucesso! Redirecionando...");
+        setSuccessMessage(
+          "Conta criada e autenticada com sucesso! Redirecionando...",
+        );
         setTimeout(() => {
-          navigate("/");
+          navigate("/dashboard");
         }, 1500);
       }
     } catch (err) {
@@ -96,7 +103,7 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
         setErrorMessage(err.message);
       } else {
         setErrorMessage(
-          "Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde."
+          "Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.",
         );
       }
     } finally {
@@ -138,7 +145,9 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                     {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">{user.name}</h3>
+                    <h3 className="text-white font-bold text-lg">
+                      {user.name}
+                    </h3>
                     <p className="text-gray-400 text-xs">{user.email}</p>
                     {user.company && (
                       <p className="text-[#D4FF46] text-xs mt-0.5 font-medium">
@@ -229,9 +238,14 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                     exit={{ opacity: 0, y: -10 }}
                     className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 text-left"
                   >
-                    <AlertCircle className="text-red-400 shrink-0 mt-0.5" size={18} />
+                    <AlertCircle
+                      className="text-red-400 shrink-0 mt-0.5"
+                      size={18}
+                    />
                     <div>
-                      <h4 className="text-red-300 font-semibold text-xs">Erro de Autenticação</h4>
+                      <h4 className="text-red-300 font-semibold text-xs">
+                        Erro de Autenticação
+                      </h4>
                       <p className="text-red-200/90 text-xs mt-0.5 leading-relaxed">
                         {errorMessage}
                       </p>
@@ -249,9 +263,14 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                     exit={{ opacity: 0, y: -10 }}
                     className="mb-4 p-4 rounded-xl bg-[#D4FF46]/10 border border-[#D4FF46]/30 flex items-start gap-3 text-left"
                   >
-                    <CheckCircle2 className="text-[#D4FF46] shrink-0 mt-0.5" size={18} />
+                    <CheckCircle2
+                      className="text-[#D4FF46] shrink-0 mt-0.5"
+                      size={18}
+                    />
                     <div>
-                      <h4 className="text-white font-semibold text-xs">Sucesso</h4>
+                      <h4 className="text-white font-semibold text-xs">
+                        Sucesso
+                      </h4>
                       <p className="text-gray-300 text-xs mt-0.5 leading-relaxed">
                         {successMessage}
                       </p>
@@ -295,7 +314,9 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                         className="block text-xs font-semibold text-gray-300 mb-1.5"
                       >
                         Nome da empresa{" "}
-                        <span className="text-gray-500 text-[10px]">(opcional)</span>
+                        <span className="text-gray-500 text-[10px]">
+                          (opcional)
+                        </span>
                       </label>
                       <div className="relative">
                         <Building
@@ -355,7 +376,9 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                       <button
                         type="button"
                         onClick={() =>
-                          alert("Instruções de recuperação foram enviadas ao seu e-mail cadastrado.")
+                          alert(
+                            "Instruções de recuperação foram enviadas ao seu e-mail cadastrado.",
+                          )
                         }
                         className="text-xs text-[#D4FF46] hover:underline cursor-pointer bg-transparent border-none p-0"
                       >
@@ -423,7 +446,9 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                 <button
                   type="button"
                   onClick={() =>
-                    alert("A integração SSO Google Workspace será liberada com o seu domínio corporativo.")
+                    alert(
+                      "A integração SSO Google Workspace será liberada com o seu domínio corporativo.",
+                    )
                   }
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-white transition-colors cursor-pointer"
                 >
@@ -432,7 +457,9 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                 <button
                   type="button"
                   onClick={() =>
-                    alert("A integração SAML 2.0 / Okta está disponível para planos corporativos.")
+                    alert(
+                      "A integração SAML 2.0 / Okta está disponível para planos corporativos.",
+                    )
                   }
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-white transition-colors cursor-pointer"
                 >
@@ -467,8 +494,14 @@ export function Auth({ defaultTab = "login" }: AuthProps) {
                 "Sem mensalidades, anuidades ou surpresas",
                 "Suporte prioritário 24/7 com especialistas financeiros",
               ].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-                  <CheckCircle2 size={18} className="text-[#D4FF46] shrink-0 mt-0.5" />
+                <li
+                  key={i}
+                  className="flex items-start gap-3 text-sm text-gray-300"
+                >
+                  <CheckCircle2
+                    size={18}
+                    className="text-[#D4FF46] shrink-0 mt-0.5"
+                  />
                   <span>{item}</span>
                 </li>
               ))}
