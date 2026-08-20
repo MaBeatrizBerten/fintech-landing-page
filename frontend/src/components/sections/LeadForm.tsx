@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { api, ApiError } from "../../services/api";
 
 interface LeadFormProps {
   onSuccess?: () => void;
@@ -55,61 +56,39 @@ export function LeadForm({ onSuccess, className = "" }: LeadFormProps) {
     setIsSuccess(false);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            company: formData.company.trim() || undefined,
-            message: formData.message.trim(),
-          }),
-        },
-      );
+      await api.post<{ ok: boolean; lead: unknown }>("/api/leads", {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        company: formData.company.trim() || undefined,
+        message: formData.message.trim(),
+      });
 
-      if (response.status === 201) {
-        // Sucesso: limpa os campos e exibe mensagem
-        setFormData({
-          name: "",
-          email: "",
-          company: "",
-          message: "",
-        });
-        setIsSuccess(true);
-        onSuccess?.();
-      } else if (response.status === 429) {
-        // Rate limit atingido
-        setErrorMessage(
-          "Muitas tentativas. Por favor, tente novamente em alguns minutos.",
-        );
-      } else if (response.status === 400) {
-        // Erro de validação
-        try {
-          const data = await response.json();
+      // Sucesso: limpa os campos e exibe mensagem
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        message: "",
+      });
+      setIsSuccess(true);
+      onSuccess?.();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 429) {
           setErrorMessage(
-            data?.error ||
-              "Dados inválidos. Por favor, verifique os campos preenchidos.",
+            "Muitas tentativas. Por favor, tente novamente em alguns minutos."
           );
-        } catch {
+        } else {
           setErrorMessage(
-            "Dados inválidos. Por favor, verifique os campos preenchidos.",
+            err.message ||
+              "Dados inválidos. Por favor, verifique os campos preenchidos."
           );
         }
       } else {
-        // Outros status de erro
         setErrorMessage(
-          "Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.",
+          "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente."
         );
       }
-    } catch (err) {
-      console.error("Erro ao enviar lead:", err);
-      setErrorMessage(
-        "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
-      );
     } finally {
       setIsLoading(false);
     }

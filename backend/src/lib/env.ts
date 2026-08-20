@@ -13,6 +13,16 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  JWT_SECRET: z
+    .string()
+    .min(8, "JWT_SECRET deve ter no mínimo 8 caracteres.")
+    .default("dev-super-secret-jwt-key-change-in-production"),
+  JWT_EXPIRES_IN: z
+    .string()
+    .default("7d"),
+  FRONTEND_URL: z
+    .string()
+    .optional(),
   ADMIN_API_KEY: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   NOTIFY_EMAIL_TO: z.string().optional(),

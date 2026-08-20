@@ -16,7 +16,10 @@ import {
   Menu,
   X,
   Zap,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+
 
 interface SubItem {
   title: string;
@@ -161,6 +164,7 @@ const navSections: NavSection[] = [
 ];
 
 export function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
@@ -338,19 +342,43 @@ export function Navbar() {
         </nav>
 
         {/* Ações (Botões à Direita) */}
-        <div className="flex items-center gap-4">
-          <Link
-            to="/entrar"
-            className="text-white text-sm font-medium hover:text-gray-300 transition-colors hidden sm:block"
-          >
-            Entrar
-          </Link>
-          <Link
-            to="/comecar"
-            className="bg-[#D4FF46] text-black px-5 py-2.5 rounded-full text-sm font-bold hover:bg-[#bce63b] transition-transform hover:scale-105 active:scale-95"
-          >
-            Começar agora
-          </Link>
+        <div className="flex items-center gap-3">
+          {isAuthenticated && user ? (
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/entrar"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-[#D4FF46]/40 transition-colors text-xs font-semibold text-white"
+              >
+                <div className="w-6 h-6 rounded-full bg-[#D4FF46] text-black font-bold flex items-center justify-center text-[10px]">
+                  {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                </div>
+                <span className="max-w-[120px] truncate">{user.name.split(" ")[0]}</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => logout()}
+                title="Sair da conta"
+                className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link
+                to="/entrar"
+                className="text-white text-sm font-medium hover:text-gray-300 transition-colors hidden sm:block"
+              >
+                Entrar
+              </Link>
+              <Link
+                to="/comecar"
+                className="bg-[#D4FF46] text-black px-5 py-2.5 rounded-full text-sm font-bold hover:bg-[#bce63b] transition-transform hover:scale-105 active:scale-95"
+              >
+                Começar agora
+              </Link>
+            </>
+          )}
 
           {/* Botão Mobile Hamburger */}
           <button
@@ -433,20 +461,54 @@ export function Navbar() {
               })}
 
               <div className="pt-4 flex flex-col gap-3">
-                <Link
-                  to="/entrar"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-3 rounded-full border border-white/20 text-white font-semibold text-sm hover:bg-white/5 text-center"
-                >
-                  Entrar
-                </Link>
-                <Link
-                  to="/comecar"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-3 rounded-full bg-[#D4FF46] text-black font-bold text-sm hover:bg-[#bce63b] text-center"
-                >
-                  Começar agora
-                </Link>
+                {isAuthenticated && user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10">
+                      <div className="w-8 h-8 rounded-full bg-[#D4FF46] text-black font-bold flex items-center justify-center text-xs shrink-0">
+                        {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-white text-sm font-semibold truncate">{user.name}</div>
+                        <div className="text-gray-400 text-xs truncate">{user.email}</div>
+                      </div>
+                    </div>
+                    <Link
+                      to="/entrar"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-2.5 rounded-full border border-white/20 text-white font-semibold text-sm hover:bg-white/5 text-center"
+                    >
+                      Minha Conta
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full py-2.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 font-semibold text-sm hover:bg-red-500/20 text-center flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <LogOut size={16} />
+                      <span>Sair da conta</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/entrar"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-3 rounded-full border border-white/20 text-white font-semibold text-sm hover:bg-white/5 text-center"
+                    >
+                      Entrar
+                    </Link>
+                    <Link
+                      to="/comecar"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-3 rounded-full bg-[#D4FF46] text-black font-bold text-sm hover:bg-[#bce63b] text-center"
+                    >
+                      Começar agora
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
